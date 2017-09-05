@@ -8,11 +8,6 @@
 
 import Foundation
 
-func changSign(operand: Double) -> Double{
-    return -operand
-}
-
-
 // 结构体自带构造器 初始化所有未初始化属性 类不行
 struct CalculatorBrain {
     
@@ -20,7 +15,6 @@ struct CalculatorBrain {
     // 实参标签为空
     private var accumulator: Double?
     
-
     
     //  枚举 可以存放各种类型 一个类型的合集 没个枚举类型都有一个关联值类型
     private enum Operation{
@@ -35,7 +29,8 @@ struct CalculatorBrain {
         "e" : Operation.constant(M_E),
         "√" : Operation.unaryOperation(sqrt),
         "cos" : Operation.unaryOperation(cos),
-        "±" : Operation.unaryOperation(changSign),
+        "tan" : Operation.unaryOperation(tan),
+        "±" : Operation.unaryOperation({ -$0 }),
         "×" : Operation.binaryOperation({ $0 * $1 }),  //闭包
         "-" : Operation.binaryOperation({ $0 - $1 }),
         "+" : Operation.binaryOperation({ $0 + $1 }),
@@ -61,32 +56,64 @@ struct CalculatorBrain {
                 }
             case .equals:
                 performPendingBinaryOperaion()
-            case .point:
-                break 
             }
         }
     }
     
-    
-    private mutating func performPendingBinaryOperaion(){
-        if pendingBinaryOperation != nil && accumulator != nil{
-            accumulator = pendingBinaryOperation!.perform(with: accumulator!)
-            pendingBinaryOperation = nil
-        }
-    }
+
     
     private var pendingBinaryOperation: PendingBinaryOperation?
+   
     
     // 即将完成二元运算
     private struct PendingBinaryOperation {
         let function: (Double, Double) -> Double
         let firstOperand: Double
-        
         // 实参标签“with“ 形参名称secondOperand
         func perform(with secondOperand: Double) -> Double {
             return function(firstOperand, secondOperand)
         }
+        // 返回是否有二元运算符等待
+//        func resultIsPending() -> Bool{
+//            if firstOperand != nil && pendingBinaryOperation != nil {
+//                return true
+//            }else{
+//                return false
+//            }
+//        }
+
     }
+    // 显示二元运算结果
+    private mutating func performPendingBinaryOperaion(){
+        if pendingBinaryOperation != nil && accumulator != nil{
+            accumulator = pendingBinaryOperation!.perform(with: accumulator!)
+            pendingBinaryOperation = nil
+        }
+        
+    }
+
+    
+    mutating func setOperand(_ operand: Double){
+        accumulator = operand
+        
+    }
+    
+    var result: Double?{   //计算属性 只读 获得结果
+        get{
+            return accumulator
+        }
+    }
+    
+//    var description: String{
+//        get{
+//            accumulator
+//        }
+//    }
+    
+}
+
+
+
     /* switch symbol {
      case "π":
      accumulator = Double.pi
@@ -103,19 +130,4 @@ struct CalculatorBrain {
     
     
     //获取计算数 设置操作数
-    mutating func setOperand(_ operand: Double){
-        accumulator = operand
-        
-    }
-    
-    var result: Double?{   //计算属性 只读 获得结果
-        get{
-            return accumulator
-        }
-    }
-    
-    
-}
-
-
 
